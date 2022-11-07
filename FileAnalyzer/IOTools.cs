@@ -95,9 +95,11 @@ namespace FileAnalyzer {
         }
 
         internal static string RequestFilePathOrName()
-        {
+        {// Function to request file name
+         // or path to the file from user
+         // to save data in.
             Console.Write(fileNameRequestReport);
-            string userInput = GetCsvFormatFileName();
+            string userInput = GetCsvFormatFilePath();
 
             while (!ValidatePathAndName(userInput))
             {
@@ -110,9 +112,10 @@ namespace FileAnalyzer {
         }
 
         private static string RequestExistingFilePath()
-        {
+        {// Function to request file name or
+         // path to the existing file.
             Console.Write(filePathRequestReport, currentWorkingDirectory);
-            string userInput = GetCsvFormatFileName();
+            string userInput = GetCsvFormatFilePath();
 
             while (!ValidatePathAndName(userInput) || !File.Exists(userInput)) 
             {
@@ -122,29 +125,31 @@ namespace FileAnalyzer {
                 { Console.WriteLine(missingFileReport); }
                 Console.Write(filePathRequestReport, currentWorkingDirectory);
 
-                userInput = GetCsvFormatFileName();
+                userInput = GetCsvFormatFilePath();
             }
 
             return userInput;
         }
 
-        private static bool ValidatePathAndName(string path)
+        private static bool ValidatePathAndName(string userInput)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (string.IsNullOrWhiteSpace(userInput))
             { return false; }
             
-            // Get file name from the path.
+            // Get file name and path to the
+            // file from the userInput.
             string fileName = string.Empty;
             string pathToFile = string.Empty;
-            string[] splittedPath = path.Trim().Split(pathSeparators, StringSplitOptions.RemoveEmptyEntries);
+            string[] splittedPath = userInput
+                .Trim()
+                .Split(pathSeparators, StringSplitOptions.RemoveEmptyEntries);
             if (!(splittedPath is null) && splittedPath.Length > 0)
             {
                 fileName = splittedPath[^1];
-                int lastSepIndex = path.LastIndexOfAny(pathSeparators);
+                int lastSepIndex = userInput.LastIndexOfAny(pathSeparators);
+                // If path to the file is provived.
                 if (lastSepIndex != -1)
-                {// If path to the file is provived;
-                    pathToFile = path[..lastSepIndex];
-                }
+                { pathToFile = userInput[..lastSepIndex]; }
             }
 
             return !string.IsNullOrWhiteSpace(fileName)
@@ -218,7 +223,7 @@ namespace FileAnalyzer {
             return true;
         }
 
-        private static string GetCsvFormatFileName()
+        private static string GetCsvFormatFilePath()
         {// Function to read user input
          // from the console and check
          // whether user wrote extension
@@ -232,6 +237,18 @@ namespace FileAnalyzer {
             // file name without extension.
             if (!userInput.EndsWith(".csv"))
             { userInput += ".csv"; }
+
+            // If user provided only file
+            // name without the full path.
+            if (userInput.IndexOfAny(pathSeparators) == -1)
+            {
+                // In Windows BaseDirectory variable
+                // doesn't ends with "\" but in Linux does.
+                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                { userInput = userInput.Insert(0, currentWorkingDirectory) + @"\"; }
+                else
+                { userInput = userInput.Insert(0, currentWorkingDirectory); }
+            }
 
             return userInput;
         }

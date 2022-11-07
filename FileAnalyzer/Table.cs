@@ -43,7 +43,7 @@ namespace FileAnalyzer
 
         // Amount of fields in the row.
         // Needed for the accuracy of data 
-        // representation data in the console.
+        // representation in the console.
         private readonly int _amountOfFields;
 
         // Array with widths for 
