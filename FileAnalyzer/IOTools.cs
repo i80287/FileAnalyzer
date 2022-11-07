@@ -166,16 +166,17 @@ namespace FileAnalyzer {
             if (!(splittedPath is null) && splittedPath.Length > 0)
             {
                 fileName = splittedPath[^1];
-                pathToFile = path[..path.LastIndexOfAny(pathSeparators)];
+                int lastSepIndex = path.LastIndexOfAny(pathSeparators);
+                if (lastSepIndex != -1)
+                {// If path to the file is provived;
+                    pathToFile = path[..lastSepIndex];
+                }
             }
 
             return !string.IsNullOrWhiteSpace(fileName)
                 && pathToFile.IndexOfAny(invalidPathChars) == -1
                 && fileName.IndexOfAny(invalidNameChars) == -1;
         }
-
-        private static bool ValidateFileName(string name)
-            => !string.IsNullOrWhiteSpace(name) && name.IndexOfAny(invalidNameChars) == -1;
 
         private static Encoding GetFileEncoding(string path)
         {// Function to read first bytes of the file and peek an Encoding.
