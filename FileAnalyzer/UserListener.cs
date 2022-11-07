@@ -56,7 +56,10 @@ namespace FileAnalyzer
                 Console.Write(commandsList);
                 userInput = Console.ReadLine();
             }
-            
+
+            // Move cursor to the next line just for more
+            // accurate display of the following data.
+            Console.WriteLine();
             return (UserCommand)commandNumber;
         }
     }
