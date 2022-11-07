@@ -86,7 +86,7 @@ namespace FileAnalyzer
                 splittedData.Add(string.Empty);
             }
 
-            _rawData = string.Copy(fileRow);
+            _rawData = new string(fileRow);
             SplittedData = new string[amountOfFields];
             Array.Copy(splittedData.ToArray(), SplittedData, amountOfFields);
 
