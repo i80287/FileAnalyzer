@@ -12,8 +12,8 @@ namespace FileAnalyzer
     /// </summary>
     public class Table
     {
-        private const string averageRainfallReport = "# Average rainfall in the {0}: {1} mm";
-        private const string noRainfallReport = "# No rainfall measurements in the {0}";
+        private const string averageRainfallReport = "Average rainfall in the {0}: {1} mm";
+        private const string noRainfallReport = "No rainfall measurements in the {0}";
         private const string sunshinePeriodReport = "Longest sunshine period was on {0}.\n"
                                                   + "It lasted for {1} hours.\n"
                                                   + "Max temperature on that date was {2} °C.\n\n";
@@ -29,83 +29,54 @@ namespace FileAnalyzer
         private const string normalPressDaysReport = "Amount of days with normal pressure" +
                                                      " from 1000 to 1007 kPa: {0}";
 
-        private List<ObservationData> _observations;
+        // Table line in format ┌──...──┐.
+        private readonly string _startTableLine;
+
+        // Table line in format ├──...──┤.
+        private readonly string _midTableLine;
+
+        // Table line in format └──...──┘.
+        private readonly string _endTableLine;
+
+        // Table line in format │ Name1 │ ... │ NameK │.
+        private readonly string _columnsNamesLine;
 
         // Amount of fields in the row.
         // Needed for the accuracy of data 
         // representation data in the console.
-        private int _amountOfFields;
+        private readonly int _amountOfFields;
+
         // Array with widths for 
         // each column in the table.
         // E.g. column for locations
         // can be 12 symbols wide
         // and column for date can be
         // 10 symbols wide.
-        private int[] _columnsWidth;
-        private int _tableWidth;
-        private string _csvFormatColumnsNames;
-        private string[] _columnsNames;
-        
+        private readonly int[] _columnsWidth;
+        private readonly string[] _columnsNames;
+        private readonly string _csvFormatColumnsNames;        
+
+        private readonly List<ObservationData> _observations;
+
         public Table(string[] data)
         {
             if (data == null || data.Length == 0)
-            {// If empty data is provided.
-                _observations = new List<ObservationData>(0);
-                return;
-            }
+            { return; }
 
             _amountOfFields = data[0].Trim().Split(',').Length;
+            _observations = ParseData(data);
 
-            _csvFormatColumnsNames = string.Copy(data[0]);
-            _columnsNames = new string[_amountOfFields];
-            Array.Copy(data[0].Trim().Split(','), _columnsNames, _amountOfFields);
-            _columnsWidth = new int[_amountOfFields];
+            _csvFormatColumnsNames = new string(data[0]);
+            _columnsWidth = CalculateColumnsWidth();
+            _columnsNames = ParseColumnsNames();
 
-            _observations = new List<ObservationData>(data.Length);
-            foreach(string rowData in data.Skip(1))
-            {
-                ObservationData observData = new ObservationData(rowData, _amountOfFields);
-
-                if (observData.IsParsedSuccessfully)
-                {// Check is needed because not every row can be parsed successfully.
-                    _observations.Add(observData);
-                }
-            }
-            
-            PreProcessData();
-        }
-
-        private void PreProcessData()
-        {// Function to pre calculate data needed
-         // to execute user commands.         
-
-            // Calculating max width for each column.
-            foreach (ObservationData observData in _observations)
-            {
-                for (int i = 0; i < _amountOfFields; ++i)
-                {
-                    if (observData.SplittedData[i].Length > _columnsWidth[i])
-                    {
-                        _columnsWidth[i] = observData.SplittedData[i].Length;
-                    }
-                }
-            }
-
-            // To be able to write table to the console we should
-            // reduce the names of the columns
-            for (int i = 0; i < _columnsNames.Length; ++i)
-            {
-                if (_columnsNames[i].Length > _columnsWidth[i])
-                {
-                    _columnsNames[i] = _columnsNames[i].Substring(0, _columnsWidth[i] - 1);
-                    _columnsNames[i] += ".";
-                }
-            }
-
-            // Sum of width for each column
-            // + amount of " # " separated symbols between columns
-            // + 1 '#' symbol for the right border of the table
-            _tableWidth = _columnsWidth.Sum() + 3 * _columnsWidth.Length + 1;
+            // Form table main lines used
+            // to form text representation
+            // of the table in the console.
+            _startTableLine = BuildStartLine();
+            _midTableLine = BuildMidLine();
+            _endTableLine = BuildEndLine();
+            _columnsNamesLine = BuildColumnNamesLine();
         }
 
         public (StringBuilder, StringBuilder) FetchByLocationEndYear(string location, params int[] years)
@@ -153,29 +124,23 @@ namespace FileAnalyzer
                 if (rainfalls.Count() > 0)
                 {
                     double averageRainfall = rainfalls.Average();
-                    string report = string.Format(averageRainfallReport, _locationsNames[i], averageRainfall)
-                        .PadRight(_tableWidth - 1, ' ') + "#";
+                    string report = string.Format(averageRainfallReport, _locationsNames[i], averageRainfall);
                     strBuilder.AppendLine(report);
                 }
                 else
                 {// If all observations from location have "NA" rainfall.
-                    string report = string.Format(noRainfallReport, _locationsNames[i])
-                        .PadRight(_tableWidth - 1, ' ') + "#";
+                    string report = string.Format(noRainfallReport, _locationsNames[i]);
                     strBuilder.AppendLine(report);
                 }
 
-                // Add separation line.
-                strBuilder.AppendLine(new string('#', _tableWidth));
+                //strBuilder.AppendLine(startTableLine);
+                //strBuilder.Append(FormPartialTable(sameLocationObservs, 10));
+                //strBuilder.AppendLine(endTableLine);
+                strBuilder.Append(FormTable(sameLocationObservs, 10));
 
-                strBuilder.Append(FormPartialTable(sameLocationObservs, 10));
-                
-                // Add end line.
-                strBuilder.AppendLine(new string('#', _tableWidth));
-
+                // Fill StringBuilder with data for the csv file.
                 foreach (ObservationData observData in sameLocationObservs)
-                {// Fill StringBuilder with data for the csv file.
-                    fileStrBuilder.AppendLine(observData.ToString());
-                }
+                { fileStrBuilder.AppendLine(observData.ToString()); }
             }
 
             return (FormTableFromContent(strBuilder, false), fileStrBuilder);
@@ -242,154 +207,61 @@ namespace FileAnalyzer
          // contains data in console text table format with headers.
             StringBuilder strBuilder = new StringBuilder(obserations.Count);
 
-            // Forming the header of the text table.
-            strBuilder.AppendLine(new string('#', _tableWidth));
-            strBuilder.Append("# ");
-            for (int i = 0; i < _amountOfFields; ++i)
-            {
-                strBuilder.Append(_columnsNames[i].PadRight(_columnsWidth[i], ' ') + " # ");
-            }
-            strBuilder.Append('\n');
-            strBuilder.AppendLine(new string('#', _tableWidth));
+            // Form the header of the text table.
+            strBuilder.AppendLine(_startTableLine);
+            strBuilder.AppendLine(_columnsNamesLine);
+            strBuilder.AppendLine(_midTableLine);
 
             // Form body of the text table.
-            if (howMuchFromStartAndEnd <= 0
-                || obserations.Count / 2 <= howMuchFromStartAndEnd)
+            if (howMuchFromStartAndEnd <= 0 ||
+                obserations.Count / 2 <= howMuchFromStartAndEnd)
             {// Add all observations.
                 foreach (ObservationData observData in obserations)
-                {
-                    strBuilder.Append("# ");
-                    for (int i = 0; i < _amountOfFields; ++i)
-                    {
-                        strBuilder.Append(observData.SplittedData[i].PadRight(_columnsWidth[i], ' ') + " # ");
-                    }
-                    strBuilder.Append('\n');
-                }
+                { strBuilder.Append(BuildLine(observData)); }
             }
             else
             {// Add only 2 * howMuchFromStartAndEnd observations
+                // Add first howMuchFromStartAndEnd elements.
                 foreach (ObservationData observData in obserations.Take(howMuchFromStartAndEnd))
-                {// Add first howMuchFromStartAndEnd elements.
-                    strBuilder.Append("# ");
-                    for (int i = 0; i < _amountOfFields; ++i)
-                    {
-                        strBuilder.Append(observData.SplittedData[i].PadRight(_columnsWidth[i], ' ') + " # ");
-                    }
-                    strBuilder.Append('\n');
-                }
+                { strBuilder.Append(BuildLine(observData)); }
 
+                // Add "..." to each column to show reduction.
                 for (int j = 0; j != 3; ++j)
-                {// Add "..." to each column to show reduction.
-                    strBuilder.Append("# ");
-                    for (int i = 0; i < _amountOfFields; ++i)
-                    {
-                        strBuilder.Append(".".PadRight(_columnsWidth[i], ' ') + " # ");
-                    }
-                    strBuilder.Append('\n');
-                }
-                                
-                foreach (ObservationData observData in obserations.Skip(obserations.Count - howMuchFromStartAndEnd))
-                {// Add last howMuchFromStartAndEnd elements.
-                    strBuilder.Append("# ");
-                    for (int i = 0; i < _amountOfFields; ++i)
-                    {
-                        strBuilder.Append(observData.SplittedData[i].PadRight(_columnsWidth[i], ' ') + " # ");
-                    }
-                    strBuilder.Append('\n');
-                }
-            }
+                { strBuilder.Append(BuildLine(".")); }
 
-            // Add last line to the text table.
-            strBuilder.AppendLine(new string('#', _tableWidth));
+                // Add last howMuchFromStartAndEnd elements.
+                foreach (ObservationData observData in obserations.Skip(obserations.Count - howMuchFromStartAndEnd))
+                { strBuilder.Append(BuildLine(observData)); }
+            }
+            
+            strBuilder.AppendLine(_endTableLine);
 
             return strBuilder;
         }
-
-        private StringBuilder FormPartialTable(List<ObservationData> obserations, int howMuchFromStartAndEnd = - 1)
-        {// Function to form given observations into a StringBuilder
-         // contains data in console text table format without
-         // headers and last line.
-            StringBuilder strBuilder = new StringBuilder(obserations.Count);
-
-            // Form body of the text table.
-            if (howMuchFromStartAndEnd <= 0
-                || obserations.Count / 2 <= howMuchFromStartAndEnd)
-            {// Add all observations.
-                foreach (ObservationData observData in obserations)
-                {
-                    strBuilder.Append("# ");
-                    for (int i = 0; i < _amountOfFields; ++i)
-                    {
-                        strBuilder.Append(observData.SplittedData[i].PadRight(_columnsWidth[i], ' ') + " # ");
-                    }
-                    strBuilder.Append('\n');
-                }
-            }
-            else
-            {// Add only 2 * howMuchFromStartAndEnd observations
-                foreach (ObservationData observData in obserations.Take(howMuchFromStartAndEnd))
-                {// Add first howMuchFromStartAndEnd elements.
-                    strBuilder.Append("# ");
-                    for (int i = 0; i < _amountOfFields; ++i)
-                    {
-                        strBuilder.Append(observData.SplittedData[i].PadRight(_columnsWidth[i], ' ') + " # ");
-                    }
-                    strBuilder.Append('\n');
-                }
-
-                for (int j = 0; j != 3; ++j)
-                {// Add "..." to each column to show reduction.
-                    strBuilder.Append("# ");
-                    for (int i = 0; i < _amountOfFields; ++i)
-                    {
-                        strBuilder.Append(".".PadRight(_columnsWidth[i], ' ') + " # ");
-                    }
-                    strBuilder.Append('\n');
-                }
-
-                foreach (ObservationData observData in obserations.Skip(obserations.Count - howMuchFromStartAndEnd))
-                {// Add last howMuchFromStartAndEnd elements.
-                    strBuilder.Append("# ");
-                    for (int i = 0; i < _amountOfFields; ++i)
-                    {
-                        strBuilder.Append(observData.SplittedData[i].PadRight(_columnsWidth[i], ' ') + " # ");
-                    }
-                    strBuilder.Append('\n');
-                }
-            }
-
-            return strBuilder;
-        }
-
+        
         private StringBuilder FormTableFromContent(StringBuilder content, bool addEndLine = true)
-        {// Function to form given StringBuilder into
-         // data in console text table format with headers.
+        {// Function to form data from given StringBuilder
+         // into a console text table format with headers.
 
             StringBuilder strBuilder = new StringBuilder();
 
-            // Forming the header of the text table.
-            strBuilder.AppendLine(new string('#', _tableWidth));
-            strBuilder.Append("# ");
-            for (int i = 0; i < _amountOfFields; ++i)
-            {
-                strBuilder.Append(_columnsNames[i].PadRight(_columnsWidth[i], ' ') + " # ");
-            }
-            strBuilder.Append('\n');
-            strBuilder.AppendLine(new string('#', _tableWidth));
+            // Form the header of the text table.
+            strBuilder.AppendLine(_startTableLine);
+            strBuilder.AppendLine(_columnsNamesLine);
+            strBuilder.AppendLine(_midTableLine);
 
             // Add provided content to the body of the text table.
             strBuilder.Append(content);
 
             if (addEndLine)
-            {// Last line of the text table.
-                strBuilder.AppendLine(new string('#', _tableWidth));
-            }
+            { strBuilder.AppendLine(_endTableLine); }
 
             return strBuilder;
         }
 
         private StringBuilder FormCsvData(List<ObservationData> obserations)
-        {// Function to form given observations into a StringBuilder with csv format lines.
+        {// Function to form given observations into
+         // a StringBuilder with csv format lines.
             StringBuilder fileStrBuilder = new StringBuilder(obserations.Count);
             fileStrBuilder.AppendLine(_csvFormatColumnsNames);
 
@@ -423,12 +295,18 @@ namespace FileAnalyzer
 
         private Dictionary<string, int> LocsInEachGroups()
         {// Function to calculate amount of locations in each group.
-            Dictionary<string, int> locsNamesAndCounts = 
-                _observations.ToDictionary(
-                    observData => observData.Location, 
-                    observData => _observations
+            HashSet<string> differentLocations =
+                _observations
+                .Select(observData => observData.Location)
+                .ToHashSet();
+
+            Dictionary<string, int> locsNamesAndCounts =
+                differentLocations
+                .ToDictionary(
+                    location => location,
+                    location => _observations
                         .Where(observData => observData
-                            .Equals(observData.Location))
+                            .Location.Equals(location))
                         .Count());
 
             return locsNamesAndCounts;
@@ -452,6 +330,145 @@ namespace FileAnalyzer
                 .Where(observData => observData.Pressure >= 1000.0 &&
                     observData.Pressure <= 1007.0)
                 .Count();
+        }
+
+        private List<ObservationData> ParseData(string[] data)
+        {// Function to parse data from the file
+         // and add it to the List with prepared data.
+            List<ObservationData> observations = new List<ObservationData>(data.Length);
+            foreach (string rowData in data.Skip(1))
+            {// Add observations to the table.
+                ObservationData observData = new ObservationData(rowData, _amountOfFields);
+                if (observData.IsParsedSuccessfully)
+                {// Check is needed because not every row can be parsed successfully.
+                    observations.Add(observData);
+                }
+            }
+            return observations;
+        }
+
+        private int[] CalculateColumnsWidth()
+        {// Function to calculate width of each column
+         // based on max width of the fields in each column.
+            int[] columnsWidth = new int[_amountOfFields];
+            foreach (ObservationData observData in _observations)
+            {
+                for (int i = 0; i < _amountOfFields; ++i)
+                {
+                    if (observData.SplittedData[i].Length > columnsWidth[i])
+                    {
+                        columnsWidth[i] = observData.SplittedData[i].Length;
+                    }
+                }
+            }
+            return columnsWidth;
+        }
+
+        private string[] ParseColumnsNames()
+        {// Function to parse first line of the
+         // table into the names for columns.
+            string[] columnsNames = new string[_amountOfFields];
+            Array.Copy(_csvFormatColumnsNames.Trim().Split(','), columnsNames, _amountOfFields);
+            // To be able to write table to the console
+            // names of the columns should be reduced.
+            for (int i = 0; i < _amountOfFields; ++i)
+            {
+                if (columnsNames[i].Length > _columnsWidth[i])
+                {// If name of the column is longer then column width.
+                    columnsNames[i] = columnsNames[i].Substring(0, _columnsWidth[i] - 1) + ".";
+                }
+            }
+            return columnsNames;
+        }
+
+        private string BuildStartLine()
+        {// Function to build first line of text
+         // table representation in the console.
+            // Init StringBuilder with ┌ symbol.
+            StringBuilder strBuilder = new StringBuilder("\u250C");
+
+            for (int i = 0; i < _columnsWidth.Length - 1; ++i)
+            {// Add ───...───┬.
+                strBuilder.Append(new string('\u2500', _columnsWidth[i]));
+                strBuilder.Append('\u252C');
+            }
+
+            // Add ───...───┐.
+            strBuilder.Append(new string('\u2500', _columnsWidth[^1]));
+            strBuilder.Append('\u2510');
+
+            return strBuilder.ToString();
+        }
+
+        private string BuildMidLine()
+        {// Function to build middle line of text
+         // table representation in the console.
+         // (this line needed for separating data)
+            // Init StringBuilder with ├ symbol.
+            StringBuilder strBuilder = new StringBuilder("\u251C");
+
+            for (int i = 0; i < _columnsWidth.Length - 1; ++i)
+            {// Add ───...───┼.
+                strBuilder.Append(new string('\u2500', _columnsWidth[i]));
+                strBuilder.Append('\u253C');
+            }
+
+            // Add ───...───┤.
+            strBuilder.Append(new string('\u2500', _columnsWidth[^1]));
+            strBuilder.Append('\u2524');
+
+            return strBuilder.ToString();
+        }
+
+        private string BuildEndLine()
+        {// Function to build end line of text
+         // table representation in the console.
+            // Init StringBuilder with └ symbol.
+            StringBuilder strBuilder = new StringBuilder("\u2514");
+
+            for (int i = 0; i < _columnsWidth.Length - 1; ++i)
+            {// Add ───...───┴.
+                strBuilder.Append(new string('\u2500', _columnsWidth[i]));
+                strBuilder.Append('\u2534');
+            }
+
+            // Add ───...───┘.
+            strBuilder.Append(new string('\u2500', _columnsWidth[^1]));
+            strBuilder.Append('\u2518');
+
+            return strBuilder.ToString();
+        }
+        
+        private string BuildColumnNamesLine()
+        {
+            StringBuilder strBuilder = new StringBuilder("\u2502");
+            for (int i = 0; i < _amountOfFields; ++i)
+            {
+                strBuilder.Append(_columnsNames[i].PadRight(_columnsWidth[i], ' ') + "\u2502");
+            }
+            return strBuilder.ToString();
+        }
+
+        private StringBuilder BuildLine(string str)
+        {
+            StringBuilder strBuilder = new StringBuilder("\u2502");
+            for (int i = 0; i < _amountOfFields; ++i)
+            {
+                strBuilder.Append(str.PadRight(_columnsWidth[i], ' ') + "\u2502");
+            }
+            strBuilder.AppendLine();
+            return strBuilder;
+        }
+
+        private StringBuilder BuildLine(ObservationData observData)
+        {
+            StringBuilder strBuilder = new StringBuilder("\u2502");
+            for (int i = 0; i < _amountOfFields; ++i)
+            {
+                strBuilder.Append(observData.SplittedData[i].PadRight(_columnsWidth[i], ' ') + "\u2502");
+            }
+            strBuilder.AppendLine();
+            return strBuilder;
         }
     }
 }
