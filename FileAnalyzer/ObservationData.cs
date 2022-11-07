@@ -6,7 +6,8 @@ using System.Collections.Generic;
 namespace FileAnalyzer
 {
     /// <summary>
-    /// Class represents data parsed from one row of table
+    /// Class represents data parsed
+    /// from one row of table.
     /// </summary>
     internal class ObservationData
     {

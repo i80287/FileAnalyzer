@@ -338,7 +338,7 @@ namespace FileAnalyzer
         }
 
         private StringBuilder FormCsvData(List<ObservationData> obserations)
-        {// Function to form given observations into a StringBuilder with csv format lines
+        {// Function to form given observations into a StringBuilder with csv format lines.
             StringBuilder fileStrBuilder = new StringBuilder(obserations.Count);
             fileStrBuilder.AppendLine(_csvFormatColumnsNames);
 
