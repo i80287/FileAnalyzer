@@ -11,7 +11,7 @@ namespace FileAnalyzer {
     /// </summary>
     internal static class IOTools {
         private const string filePathRequestReport = "Type file name or full path to the file\n"
-                                                   + "By default file will be searched in {0}\n> ";
+                                                   + "By default file will be searched in:\n{0}\n> ";
         private const string badPathReport = "Invalid name or path format";
         private const string missingFileReport = "File not found";
         private const string badEncodingReport = "File is corrupted or data is represented in unsupported encoding";
@@ -23,7 +23,7 @@ namespace FileAnalyzer {
         private const string fileNameRequestReport = "Type file name or full path to the file for saving data in it\n> ";
 
         // First line of the source file
-        // weatherAUS.csv from the dataset
+        // weatherAUS.csv from the dataset.
         private const string sourceFileHeader = "Date,Location,MinTemp,MaxTemp,Rainfall,Evaporation,Sunshine,"
                                               + "WindGustDir,WindGustSpeed,WindDir9am,WindDir3pm,WindSpeed9am,"
                                               + "WindSpeed3pm,Humidity9am,Humidity3pm,Pressure9am,Pressure3pm,"
