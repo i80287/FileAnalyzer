@@ -44,7 +44,7 @@ namespace FileAnalyzer
         private const string inputErrorReport = "Incorrect input. Please type number of the command";
 
         internal UserCommand NextCommand()
-        {
+        {// Function to get correct command from user.
             Console.Write(commandsList);
             string userInput = Console.ReadLine();
             int commandNumber = (int)UserCommand.Exit;

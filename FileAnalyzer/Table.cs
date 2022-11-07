@@ -2,13 +2,13 @@
 using System.Text;
 using System.Linq;
 using System.Collections.Generic;
-using static FileAnalyzer.IOTools;
 using System.Collections.Immutable;
 
 namespace FileAnalyzer
 {
     /// <summary>
-    /// Class for keeping and processing data from the file
+    /// Class for keeping and processing 
+    /// data from the file.
     /// </summary>
     public class Table
     {
@@ -32,7 +32,7 @@ namespace FileAnalyzer
         public Table(string[] data)
         {
             if (data == null || data.Length == 0)
-            {
+            {// If empty data is provided.
                 _observations = new List<ObservationData>(0);
                 return;
             }
@@ -50,7 +50,7 @@ namespace FileAnalyzer
                 ObservationData observData = new ObservationData(rowData, _amountOfFields);
 
                 if (observData.IsParsedSuccessfully)
-                {// check is needed because not every row can be parsed successfully
+                {// Check is needed because not every row can be parsed successfully.
                     _observations.Add(observData);
                 }
             }
@@ -59,13 +59,13 @@ namespace FileAnalyzer
         }
 
         private void PreProcessData()
-        {
+        {// Function to pre calculate data needed
+         // to execute user commands.
+            
             // Calculating names of different locations.
             _locationsNames = _observations
                 .Select(observData => observData.Location)
-                .ToImmutableSortedSet();
-                
-            
+                .ToImmutableSortedSet();           
 
             // Calculating max width for each column.
             foreach (ObservationData observData in _observations)
@@ -132,7 +132,7 @@ namespace FileAnalyzer
                     .Where(observData => observData.StringRainfall != "NA")
                     .Select(observData => observData.Rainfall);
 
-                // Add report about the average rainfall
+                // Add report about the average rainfall.
                 if (rainfalls.Count() > 0)
                 {
                     string report = $"# Average rainfall in {_locationsNames[i]}: {rainfalls.Average()}".PadRight(_tableWidth - 1, ' ') + "#";
@@ -143,13 +143,17 @@ namespace FileAnalyzer
                     string report = $"# No rainfall measurements in the {_locationsNames[i]}".PadRight(_tableWidth - 1, ' ') + "#";
                     strBuilder.AppendLine(report);
                 }
+
+                // Add separation line.
                 strBuilder.AppendLine(new string('#', _tableWidth));
 
                 strBuilder.Append(FormPartialTable(sameLocationObservs, 15));
+                
+                // Add end line.
                 strBuilder.AppendLine(new string('#', _tableWidth));
 
                 foreach (ObservationData observData in sameLocationObservs)
-                {
+                {// Fill StringBuilder with data for the csv file.
                     fileStrBuilder.AppendLine(observData.ToString());
                 }
             }
@@ -337,10 +341,12 @@ namespace FileAnalyzer
         {// Function to form given observations into a StringBuilder with csv format lines
             StringBuilder fileStrBuilder = new StringBuilder(obserations.Count);
             fileStrBuilder.AppendLine(_csvFormatColumnsNames);
+
             foreach (ObservationData observData in obserations)
-            {
+            {// Fill StringBuilder with data for the csv file.
                 fileStrBuilder.AppendLine(observData.ToString());
             }
+
             return fileStrBuilder;
         }
 

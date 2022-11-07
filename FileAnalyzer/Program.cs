@@ -28,10 +28,10 @@
         {
             bool manuallyExit = false;
             do
-            {
+            {// Main program loop.
                 UserCommand userCommand = _userListener.NextCommand();
                 switch (userCommand)
-                {// Switch to analyze the user's command.
+                {// Choose the command to execute based on user input.
                     case UserCommand.SydneyInfo:
                     { _programCore.SydneyInfoCommand(); }
                     break;

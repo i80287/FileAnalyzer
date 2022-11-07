@@ -26,14 +26,14 @@ namespace FileAnalyzer {
         private static string _currentWorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
         internal static void Print(char symbol = ' ', string end = "\n")
-        {
+        {// Function to write char in the console.
             end ??= "\n";
             Console.Write(symbol);
             Console.Write(end);
         }
 
         internal static void Print(object data, string end = "\n")
-        {// Function to write string representation of the object in the console
+        {// Function to write string representation of the object in the console.
             if (data is null) { return; }
             end ??= "\n";
             Console.Write(data.ToString());
@@ -41,7 +41,7 @@ namespace FileAnalyzer {
         }
 
         internal static void Print(object[] data, string separator = " ", string end = "\n")
-        {// Function to write array of objects in the console
+        {// Function to write array of objects in the console.
             if (data is null) { return; }
             separator ??= " ";
             end ??= "\n";
@@ -52,7 +52,7 @@ namespace FileAnalyzer {
         }
 
         internal static void Print(StringBuilder data, string end = "\n")
-        {// Function to write data from the StringBuilder in the console
+        {// Function to write data from the StringBuilder in the console.
             if (data is null) { return; }
             end ??= "\n";
             Console.Write(data.ToString());
@@ -160,7 +160,7 @@ namespace FileAnalyzer {
             => !string.IsNullOrWhiteSpace(name) && name.IndexOfAny(_unsupportedNameChars) == -1;
 
         private static Encoding GetFileEncoding(string path)
-        {// function to read first bytes of the file and peek an Encoding
+        {// Function to read first bytes of the file and peek an Encoding.
             FileStream fileStream;
             try { fileStream = File.OpenRead(path); }
             catch { return null; }
@@ -176,21 +176,21 @@ namespace FileAnalyzer {
         }
 
         private static Encoding SelectEncoding(byte[] bomBytes)
-        {// select file's encoding based on first bytes of the file
+        {// Function to select file's encoding based on first bytes of the file.
             if (bomBytes[0] == 0xFE && bomBytes[1] == 0xFF)
-            {// UTF-16 BE starts with FE FF
+            {// UTF-16 BE starts with FE FF.
                 return Encoding.BigEndianUnicode;
             }
             if (bomBytes[0] == 0xEF
                 && bomBytes[1] == 0xBB
                 && bomBytes[2] == 0xBF)
-            {// UTF-8 starts with EF BB BF
+            {// UTF-8 starts with EF BB BF.
                 return Encoding.UTF8;
             }
             if (bomBytes[0] == 0x2B
                 && bomBytes[1] == 0x2F
                 && bomBytes[2] == 0x76)
-            {// UTF-7 starts with 2B 2F 76
+            {// UTF-7 starts with 2B 2F 76.
                 return Encoding.UTF7;
             }
             if (bomBytes[0] == 0xFF
@@ -202,7 +202,7 @@ namespace FileAnalyzer {
                 }
                 return Encoding.Unicode;
             }
-            // file may not contain BOM
+            // File may not contain BOM.
             return Encoding.Default;
         }
     }
