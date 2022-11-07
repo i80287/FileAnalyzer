@@ -16,14 +16,25 @@ namespace FileAnalyzer {
         private const string missingFileReport = "File not found";
         private const string badEncodingReport = "File is corrupted or data is represented in unsupported encoding";
         private const string fileReadErrorReport = "An error occured while reading the file. Please type file name or path again";
+        private const string fileHeadersErrorReport = "Structure of the csv file is incorrect. Program can't parse that file";
+        private const string fileColumnsWarning = "Structure of the provided csv file doesn't match the\n"
+                                                     + "structure of weatherAUS.csv source file from the dataset\n"
+                                                     + "Data may be read incorrectly\n";
         private const string fileNameRequestReport = "Type file name or full path to the file for saving data in it\n> ";
 
-        // Array of chars banned for the path to the file.
-        private static char[] _unsupportedPathChars = Path.GetInvalidPathChars();
-        // Array of chars banned for the file name.
-        private static char[] _unsupportedNameChars = Path.GetInvalidFileNameChars();
-        
-        private static string _currentWorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        // First line of the source file
+        // weatherAUS.csv from the dataset
+        private const string sourceFileHeader = "Date,Location,MinTemp,MaxTemp,Rainfall,Evaporation,Sunshine,"
+                                              + "WindGustDir,WindGustSpeed,WindDir9am,WindDir3pm,WindSpeed9am,"
+                                              + "WindSpeed3pm,Humidity9am,Humidity3pm,Pressure9am,Pressure3pm,"
+                                              + "Cloud9am,Cloud3pm,Temp9am,Temp3pm,RainToday,RainTomorrow";
+
+        private static char[] invalidPathChars = Path.GetInvalidPathChars();
+        private static char[] invalidNameChars = Path.GetInvalidFileNameChars();
+
+        private static readonly char[] pathSeparators = new char[2] { '/', '\\' };
+
+        private static string currentWorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
         internal static void Print(char symbol = ' ', string end = "\n")
         {// Function to write char in the console.
@@ -60,7 +71,7 @@ namespace FileAnalyzer {
         }
 
         internal static string GetCurrentWorkingDir()
-                => _currentWorkingDirectory;
+                => currentWorkingDirectory;
 
         internal static string[] RequestDataFromFile() 
         {
@@ -81,6 +92,12 @@ namespace FileAnalyzer {
             if (fileData is null)
             {
                 Console.WriteLine(fileReadErrorReport);
+                return RequestDataFromFile();
+            }
+
+            if (!ValidateDataHeaders(fileData))
+            {
+                Console.WriteLine(fileHeadersErrorReport);
                 return RequestDataFromFile();
             }
 
@@ -112,10 +129,10 @@ namespace FileAnalyzer {
 
         private static string RequestExistingFilePath()
         {
-            Console.Write(filePathRequestReport, _currentWorkingDirectory);
+            Console.Write(filePathRequestReport, currentWorkingDirectory);
             string userInput = Console.ReadLine();
-            if (userInput != null && !userInput.EndsWith(".csv"))
-            {// in case user wrote only file name without extension
+            if (!(userInput is null) && !userInput.EndsWith(".csv"))
+            {// In case user wrote only file name without extension.
                 userInput += ".csv";
             }
 
@@ -125,11 +142,11 @@ namespace FileAnalyzer {
                 { Console.WriteLine(badPathReport); }
                 else 
                 { Console.WriteLine(missingFileReport); }
-                Console.Write(filePathRequestReport, _currentWorkingDirectory);
+                Console.Write(filePathRequestReport, currentWorkingDirectory);
 
                 userInput = Console.ReadLine();
-                if (userInput != null && !userInput.EndsWith(".csv"))
-                {// in case user wrote only file name without extension
+                if (!(userInput is null) && !userInput.EndsWith(".csv"))
+                {// In case user wrote only file name without extension.
                     userInput += ".csv";
                 }
             }
@@ -143,21 +160,22 @@ namespace FileAnalyzer {
             { return false; }
             
             // Get file name from the path.
-            string fileName;
-            string[] splittedPath = path.Trim().Replace('\\', '/').Split('/');
-            if (splittedPath is null || splittedPath.Length == 0)
-            { fileName = null; }
-            else
-            { fileName = splittedPath[^1]; }
+            string fileName = string.Empty;
+            string pathToFile = string.Empty;
+            string[] splittedPath = path.Trim().Split(pathSeparators, StringSplitOptions.RemoveEmptyEntries);
+            if (!(splittedPath is null) && splittedPath.Length > 0)
+            {
+                fileName = splittedPath[^1];
+                pathToFile = path[..path.LastIndexOfAny(pathSeparators)];
+            }
 
-            return !string.IsNullOrWhiteSpace(fileName) 
-                && path.IndexOfAny(_unsupportedPathChars) == -1
-                && fileName.IndexOfAny(_unsupportedNameChars) == -1;
+            return !string.IsNullOrWhiteSpace(fileName)
+                && pathToFile.IndexOfAny(invalidPathChars) == -1
+                && fileName.IndexOfAny(invalidNameChars) == -1;
         }
-           
 
         private static bool ValidateFileName(string name)
-            => !string.IsNullOrWhiteSpace(name) && name.IndexOfAny(_unsupportedNameChars) == -1;
+            => !string.IsNullOrWhiteSpace(name) && name.IndexOfAny(invalidNameChars) == -1;
 
         private static Encoding GetFileEncoding(string path)
         {// Function to read first bytes of the file and peek an Encoding.
@@ -204,6 +222,25 @@ namespace FileAnalyzer {
             }
             // File may not contain BOM.
             return Encoding.Default;
+        }
+
+        private static bool ValidateDataHeaders(string[] data)
+        {// Function to check first line of the csv file.
+            if (data is null || data.Length == 0 || data[0] is null)
+            { return false; }
+
+            // Check whether first line of the
+            // file contains any column name.
+            if (data[0].Split(',').Length == 0)
+            { return false; }
+
+            // Check whether first line of the header is
+            // the same as in source file weatherAUS.csv
+            // from the dataset.
+            if (!data[0].Equals(sourceFileHeader))
+            { Console.WriteLine(fileColumnsWarning); }
+
+            return true;
         }
     }
 }
