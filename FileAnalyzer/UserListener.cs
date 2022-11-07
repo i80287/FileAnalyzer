@@ -2,6 +2,11 @@
 
 namespace FileAnalyzer
 {
+    /// <summary>
+    /// Enum for understandable
+    /// meaning the numbers of
+    /// the available commands
+    /// </summary>
     internal enum UserCommand : int
     {// Enumerator with available commands.
         SydneyInfo = 1,
@@ -38,7 +43,7 @@ namespace FileAnalyzer
           + "    4) Amount of days with normal atmospheric pressure,\n"
           + "        when pressure is from 1000 to 1007 kPa\n\n"
           + "5. Load new file\n\n"
-          + "6. Exit\n\n"
+          + "6. Exit from the menu\n\n"
           + "Write number of the command\n> ";
 
         private const string inputErrorReport = "Incorrect input. Please type number of the command";

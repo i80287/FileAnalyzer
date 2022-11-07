@@ -48,13 +48,27 @@ namespace FileAnalyzer
 
         public double Rainfall { get => _rainfall; }
 
-        public string StringRainfall { get => _rainfallAsString; }
+        public string RainfallAsStr { get => _rainfallAsString; }
 
         public double Sunshine { get => _sunshine; }
 
-        public string StringSunshine { get => _sunshineAsString; }
+        public string SunshineAsStr { get => _sunshineAsString; }
+        
+        public double MaxTemp { get => _maxTemp; }
 
-        public string StringMaxTemp { get => _maxTempAsString; }
+        public string MaxTempAsStr { get => _maxTempAsString; }
+        
+        public double WindSpeed { get => _windSpeed3pm; }
+
+        public string WindSpeedAsStr { get => _windSpeed3pmAsString; }
+
+        public string WindDir { get => _windDir3pm; }
+                
+        public string RainTodayAsStr { get => _rainTodayAsString; }
+
+        public double Pressure { get => _pressure9am; }
+
+        public string PressureAsStr { get => _pressure9amAsString; }
 
         public bool IsParsedSuccessfully { get; }
 
@@ -82,11 +96,11 @@ namespace FileAnalyzer
 
         internal int CompareRainfall(ObservationData otherObservData)
         {
-            if (_rainfallAsString == "NA" && otherObservData.StringRainfall == "NA")
+            if (_rainfallAsString == "NA" && otherObservData.RainfallAsStr == "NA")
             { return 0; }
             if (_rainfallAsString == "NA")
             { return 1; }
-            if (otherObservData.StringRainfall == "NA")
+            if (otherObservData.RainfallAsStr == "NA")
             { return -1; }
             if (_rainfall < otherObservData.Rainfall)
             { return 1; }

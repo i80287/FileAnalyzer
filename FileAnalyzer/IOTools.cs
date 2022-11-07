@@ -10,8 +10,8 @@ namespace FileAnalyzer {
     /// interface (console).
     /// </summary>
     internal static class IOTools {
-        private const string filePathRequestReport = "Type file name or full path to the file\n"
-                                                   + "By default file will be searched in:\n{0}\n> ";
+        private const string filePathRequestReport = "Type file name or full path to the csv file with data\n\n"
+                                                   + "By default file will be searched in:\n{0}\n\n> ";
         private const string badPathReport = "Invalid name or path format";
         private const string missingFileReport = "File not found";
         private const string badEncodingReport = "File is corrupted or data is represented in unsupported encoding";
@@ -20,7 +20,7 @@ namespace FileAnalyzer {
         private const string fileColumnsWarning = "Structure of the provided csv file doesn't match the\n"
                                                      + "structure of weatherAUS.csv source file from the dataset\n"
                                                      + "Data may be read incorrectly\n";
-        private const string fileNameRequestReport = "Type file name or full path to the file for saving data in it\n> ";
+        private const string fileNameRequestReport = "Type file name or full path to the file for saving data in it\n\n> ";
 
         // First line of the source file
         // weatherAUS.csv from the dataset.
@@ -36,29 +36,11 @@ namespace FileAnalyzer {
 
         private static readonly string currentWorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-        internal static void Print(char symbol = ' ', string end = "\n")
-        {// Function to write char in the console.
-            end ??= "\n";
-            Console.Write(symbol);
-            Console.Write(end);
-        }
-
         internal static void Print(object data, string end = "\n")
         {// Function to write string representation of the object in the console.
             if (data is null) { return; }
             end ??= "\n";
             Console.Write(data.ToString());
-            Console.Write(end);
-        }
-
-        internal static void Print(object[] data, string separator = " ", string end = "\n")
-        {// Function to write array of objects in the console.
-            if (data is null) { return; }
-            separator ??= " ";
-            end ??= "\n";
-            Console.Write(string
-                .Join(separator, data
-                .Where(elem => !(elem is null))));
             Console.Write(end);
         }
 
@@ -115,7 +97,7 @@ namespace FileAnalyzer {
         internal static string RequestFilePathOrName()
         {
             Console.Write(fileNameRequestReport);
-            string userInput = Console.ReadLine();
+            string userInput = GetCsvFormatFileName();
 
             while (!ValidatePathAndName(userInput))
             {
@@ -130,11 +112,7 @@ namespace FileAnalyzer {
         private static string RequestExistingFilePath()
         {
             Console.Write(filePathRequestReport, currentWorkingDirectory);
-            string userInput = Console.ReadLine();
-            if (!(userInput is null) && !userInput.EndsWith(".csv"))
-            {// In case user wrote only file name without extension.
-                userInput += ".csv";
-            }
+            string userInput = GetCsvFormatFileName();
 
             while (!ValidatePathAndName(userInput) || !File.Exists(userInput)) 
             {
@@ -144,11 +122,7 @@ namespace FileAnalyzer {
                 { Console.WriteLine(missingFileReport); }
                 Console.Write(filePathRequestReport, currentWorkingDirectory);
 
-                userInput = Console.ReadLine();
-                if (!(userInput is null) && !userInput.EndsWith(".csv"))
-                {// In case user wrote only file name without extension.
-                    userInput += ".csv";
-                }
+                userInput = GetCsvFormatFileName();
             }
 
             return userInput;
@@ -242,6 +216,24 @@ namespace FileAnalyzer {
             { Console.WriteLine(fileColumnsWarning); }
 
             return true;
+        }
+
+        private static string GetCsvFormatFileName()
+        {// Function to read user input
+         // from the console and check
+         // whether user wrote extension
+         // of the file correctly.
+            string userInput = Console.ReadLine();
+
+            if (userInput is null)
+            { return string.Empty; }
+
+            // In case user wrote only 
+            // file name without extension.
+            if (!userInput.EndsWith(".csv"))
+            { userInput += ".csv"; }
+
+            return userInput;
         }
     }
 }

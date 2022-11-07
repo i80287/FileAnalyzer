@@ -26,7 +26,6 @@
 
         public void Run()
         {
-            bool manuallyExit = false;
             do
             {// Main program loop.
                 UserCommand userCommand = _userListener.NextCommand();
@@ -44,12 +43,21 @@
                     { _programCore.SunShineAndMaxTempCommand(); }
                     break;
 
-                    case UserCommand.Exit:
-                    { manuallyExit = true; }
+                    case UserCommand.Statistics:
+                    { _programCore.StatisticCommand(); }
                     break;
+
+                    case UserCommand.LoadNewFile:
+                    { _programCore.LoadNewFile(); }
+                    break;
+
+                    case UserCommand.Exit:
+                    { _programCore.PrintExitMessage(); }
+                    return;
                 }
             }
-            while (!manuallyExit);
+            while (true);
+            
         }
 
         private void ChangeLocale()

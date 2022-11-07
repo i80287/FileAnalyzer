@@ -2,33 +2,50 @@
 using System.Text;
 using System.Linq;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 
 namespace FileAnalyzer
 {
     /// <summary>
-    /// Class for keeping and processing 
+    /// Class for keeping 
+    /// and processing 
     /// data from the file.
     /// </summary>
     public class Table
     {
+        private const string averageRainfallReport = "# Average rainfall in the {0}: {1} mm";
+        private const string noRainfallReport = "# No rainfall measurements in the {0}";
+        private const string sunshinePeriodReport = "Longest sunshine period was on {0}.\n"
+                                                  + "It lasted for {1} hours.\n"
+                                                  + "Max temperature on that date was {2} °C.\n\n";
+        private const string fishingDaysReport =  "Amount of days suitable for fishing: {0}";
+        private const string fishingDaysWithDirReport = "Amount of days suitable for fishing when wind\n" +
+                                                        " has only w, wsw, sw, ssw and w directions: {0}";
+        private const string groupsCountReport = "Amount of groups of observations " +
+                                                 "grouped by location name: {0}";
+        private const string eachGroupSizeReport =  "Amount of observations in group" +
+                                                    "  from the {0}: {1}";
+        private const string rainyDayAmountReport = "Amount of rainy days when max temperature\n" +
+                                                    " temperature was at least 20 °C: {0}";
+        private const string normalPressDaysReport = "Amount of days with normal pressure" +
+                                                     " from 1000 to 1007 kPa: {0}";
+
         private List<ObservationData> _observations;
 
         // Amount of fields in the row.
-        // Needed or the accuracy of data representation
-        // from the table class to the console.
+        // Needed for the accuracy of data 
+        // representation data in the console.
         private int _amountOfFields;
-        
-        // Array with widths for each column in the table.
-        // E.g. column for locations can be 12 symbols wide
-        // and column for date can be 10 symbols wide.
+        // Array with widths for 
+        // each column in the table.
+        // E.g. column for locations
+        // can be 12 symbols wide
+        // and column for date can be
+        // 10 symbols wide.
         private int[] _columnsWidth;
-
         private int _tableWidth;
         private string _csvFormatColumnsNames;
         private string[] _columnsNames;
-        private ImmutableSortedSet<string> _locationsNames;
-
+        
         public Table(string[] data)
         {
             if (data == null || data.Length == 0)
@@ -60,12 +77,7 @@ namespace FileAnalyzer
 
         private void PreProcessData()
         {// Function to pre calculate data needed
-         // to execute user commands.
-            
-            // Calculating names of different locations.
-            _locationsNames = _observations
-                .Select(observData => observData.Location)
-                .ToImmutableSortedSet();           
+         // to execute user commands.         
 
             // Calculating max width for each column.
             foreach (ObservationData observData in _observations)
@@ -104,7 +116,7 @@ namespace FileAnalyzer
                                      && years.Contains(observData.Year))
                 .ToList();
             
-            StringBuilder strBuilder = FormTable(filteredObservs, 40);
+            StringBuilder strBuilder = FormTable(filteredObservs, 20);
             StringBuilder fileStrBuilder = FormCsvData(filteredObservs);
             
             return (strBuilder, fileStrBuilder);
@@ -114,6 +126,11 @@ namespace FileAnalyzer
         {// Function to group observation by locations and
          // calculate average rainfall for each observation.
          // Returns observations in console table and csv formats.
+            List<string> _locationsNames = _observations
+                    .Select(observData => observData.Location)
+                    .ToHashSet()
+                    .ToList();
+
             StringBuilder strBuilder = new StringBuilder(_observations.Count + _locationsNames.Count);
             
             StringBuilder fileStrBuilder = new StringBuilder(_observations.Count);
@@ -129,25 +146,28 @@ namespace FileAnalyzer
                 sameLocationObservs.Sort((observ1, observ2) => observ1.CompareRainfall(observ2));
                 
                 IEnumerable<double> rainfalls = sameLocationObservs
-                    .Where(observData => observData.StringRainfall != "NA")
+                    .Where(observData => observData.RainfallAsStr != "NA")
                     .Select(observData => observData.Rainfall);
 
                 // Add report about the average rainfall.
                 if (rainfalls.Count() > 0)
                 {
-                    string report = $"# Average rainfall in {_locationsNames[i]}: {rainfalls.Average()}".PadRight(_tableWidth - 1, ' ') + "#";
+                    double averageRainfall = rainfalls.Average();
+                    string report = string.Format(averageRainfallReport, _locationsNames[i], averageRainfall)
+                        .PadRight(_tableWidth - 1, ' ') + "#";
                     strBuilder.AppendLine(report);
                 }
                 else
                 {// If all observations from location have "NA" rainfall.
-                    string report = $"# No rainfall measurements in the {_locationsNames[i]}".PadRight(_tableWidth - 1, ' ') + "#";
+                    string report = string.Format(noRainfallReport, _locationsNames[i])
+                        .PadRight(_tableWidth - 1, ' ') + "#";
                     strBuilder.AppendLine(report);
                 }
 
                 // Add separation line.
                 strBuilder.AppendLine(new string('#', _tableWidth));
 
-                strBuilder.Append(FormPartialTable(sameLocationObservs, 15));
+                strBuilder.Append(FormPartialTable(sameLocationObservs, 10));
                 
                 // Add end line.
                 strBuilder.AppendLine(new string('#', _tableWidth));
@@ -166,24 +186,55 @@ namespace FileAnalyzer
          // and to find date and max temperature when that period was the longest.
          // Returns observations in console table and csv formats.
             List<ObservationData> filteredObservs = _observations
-                .Where(observData => observData.StringSunshine != "NA")
+                .Where(observData => observData.SunshineAsStr != "NA")
                 .Where(observData => observData.Sunshine >= 4.0)
                 .ToList();
 
             ObservationData longestPeriodObserv = filteredObservs
                 .MaxBy(observData => observData.Sunshine);
 
-            StringBuilder strBuilder = FormTable(filteredObservs, 40);
+            StringBuilder strBuilder = FormTable(filteredObservs, 20);
 
             // Report about longest sunshine's date and max temperature on that date.
-            string report = $"\nLongest sunshine period was on {longestPeriodObserv.Date}.\n"
-                          + $"It lasted for {longestPeriodObserv.Sunshine} hours.\n"
-                          + $"Max temperature on that date was {longestPeriodObserv.StringMaxTemp} °C.\n";
+            string report = string.Format(
+                sunshinePeriodReport,
+                longestPeriodObserv.Date,
+                longestPeriodObserv.Sunshine,
+                longestPeriodObserv.MaxTempAsStr
+            );
             strBuilder.Insert(0, report);
 
             StringBuilder fileStrBuilder = FormCsvData(filteredObservs);
 
             return (strBuilder, fileStrBuilder);
+        }
+
+        public StringBuilder ShowTableStatistic()
+        {
+            (int fishingDaysCount, int fishingDaysWithDirCount)
+                = FishingDaysCount();
+            Dictionary<string, int> locsNamesAndCounts = LocsInEachGroups();
+            int rainyDaysCount = CountRainyDays();
+            int normalPressureDaysCount = CountNormalPressDays();
+            
+            StringBuilder strBuilder = new StringBuilder();
+            // Add amount of fishing days without 
+            // and with wind direction filter.
+            strBuilder.AppendLine(string.Format(fishingDaysReport, fishingDaysCount));
+            strBuilder.AppendLine(string.Format(fishingDaysWithDirReport, fishingDaysWithDirCount));
+            
+            // Add total amount of groups.
+            strBuilder.AppendLine(string.Format(groupsCountReport, locsNamesAndCounts.Count));
+            foreach(string locName in locsNamesAndCounts.Keys)
+            {// Add info about size of each group.
+                strBuilder.AppendLine(
+                    string.Format(eachGroupSizeReport, locName, locsNamesAndCounts[locName]));
+            }
+
+            strBuilder.AppendLine(string.Format(rainyDayAmountReport, rainyDaysCount));
+            strBuilder.AppendLine(string.Format(normalPressDaysReport, normalPressureDaysCount));
+
+            return strBuilder;
         }
 
         private StringBuilder FormTable(List<ObservationData> obserations, int howMuchFromStartAndEnd = -1)
@@ -350,5 +401,57 @@ namespace FileAnalyzer
             return fileStrBuilder;
         }
 
+        private (int, int) FishingDaysCount()
+        {// Function to calculate amount of days suitable for 
+         // fishing both without and with wind direction filter.
+            int goodFishDaysCount = _observations
+                .Where(observData => !observData.WindSpeedAsStr.Equals("NA") &&
+                    observData.WindSpeed < 13.0)
+                .Count();
+
+            HashSet<string> availableDirections = 
+                new HashSet<string> { "W", "WSW", "SW", "SSW", "S" };
+            int goodFishDaysCountWithDir= _observations
+                .Where(observData => !observData.WindSpeedAsStr.Equals("NA") &&
+                    observData.WindSpeed < 13.0)
+                .Where(observData => availableDirections
+                    .Contains(observData.WindDir.ToUpper()))
+                .Count();
+
+            return (goodFishDaysCount, goodFishDaysCountWithDir);
+        }
+
+        private Dictionary<string, int> LocsInEachGroups()
+        {// Function to calculate amount of locations in each group.
+            Dictionary<string, int> locsNamesAndCounts = 
+                _observations.ToDictionary(
+                    observData => observData.Location, 
+                    observData => _observations
+                        .Where(observData => observData
+                            .Equals(observData.Location))
+                        .Count());
+
+            return locsNamesAndCounts;
+        }
+
+        private int CountRainyDays()
+        {// Function to calculate amount of rainy days when
+         // max temperature was at least 20 degrees Celsius.
+            return _observations
+                .Where(observData => !observData.MaxTempAsStr.Equals("NA"))
+                .Where(observData => observData.MaxTemp >= 20.0)
+                .Where(observData => observData.RainTodayAsStr.Equals("Yes"))
+                .Count();
+        }
+        
+        private int CountNormalPressDays()
+        {// Function to calculate amount of days when
+         // pressure at 9am was from 1000 to 1007 kPa.
+            return _observations
+                .Where(observData => !observData.PressureAsStr.Equals("NA"))
+                .Where(observData => observData.Pressure >= 1000.0 &&
+                    observData.Pressure <= 1007.0)
+                .Count();
+        }
     }
 }
