@@ -29,8 +29,8 @@ namespace FileAnalyzer {
                                               + "WindSpeed3pm,Humidity9am,Humidity3pm,Pressure9am,Pressure3pm,"
                                               + "Cloud9am,Cloud3pm,Temp9am,Temp3pm,RainToday,RainTomorrow";
 
-        private static char[] invalidPathChars = Path.GetInvalidPathChars();
-        private static char[] invalidNameChars = Path.GetInvalidFileNameChars();
+        private static readonly char[] invalidPathChars = Path.GetInvalidPathChars();
+        private static readonly char[] invalidNameChars = Path.GetInvalidFileNameChars();
 
         private static readonly char[] pathSeparators = new char[2] { '/', '\\' };
 
