@@ -34,7 +34,7 @@ namespace FileAnalyzer {
 
         private static readonly char[] pathSeparators = new char[2] { '/', '\\' };
 
-        private static string currentWorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly string currentWorkingDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
         internal static void Print(char symbol = ' ', string end = "\n")
         {// Function to write char in the console.
