@@ -52,6 +52,13 @@ namespace FileAnalyzer {
             Console.Write(end);
         }
 
+        internal static void ClearConsole()
+        {// Function to clear console.
+            Console.ResetColor();
+            Console.Clear();
+            Console.SetCursorPosition(0, 0);
+        }
+
         internal static string GetCurrentWorkingDir()
                 => currentWorkingDirectory;
 

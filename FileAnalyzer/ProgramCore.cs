@@ -66,8 +66,14 @@ namespace FileAnalyzer
         internal void PrintExitMessage()
         {// Function to print exit message
          // before program will shutdown.
+            ClearUserConsole();
             Print(exitMessage);
             Console.ReadKey(true);
+        }
+
+        internal void ClearUserConsole()
+        {// Function to clear user's console.
+            ClearConsole();
         }
 
         private void SaveDataToFile(StringBuilder fileStrBuilder, string filePath)

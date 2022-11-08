@@ -14,7 +14,8 @@ namespace FileAnalyzer
         SunshineDays = 3,
         Statistics = 4,
         LoadNewFile = 5,
-        Exit = 6
+        ClearConsole = 6,
+        Exit = 7
     }
 
     /// <summary>
@@ -32,7 +33,7 @@ namespace FileAnalyzer
           + "3. Show observations when sunshine period was longer\n"
           + "    then 4 hours, date and temperature for day with\n"
           + "    longest sunshine perdion and save data to the file\n"
-          + "    Filename can be selected by the user\n\n"
+          + "    Filename is selected by the user\n\n"
           + "4. Show statistics about the observations:\n"
           + "    1) Amount of days suitable for fishing, when afternoon\n"
           + "        wind speed was less then 13\n"
@@ -43,7 +44,8 @@ namespace FileAnalyzer
           + "    4) Amount of days with normal atmospheric pressure,\n"
           + "        when pressure is from 1000 to 1007 kPa\n\n"
           + "5. Load new file\n\n"
-          + "6. Exit from the menu\n\n"
+          + "6. Clear console\n\n"
+          + "7. Exit from the menu\n\n"
           + "Write number of the command\n> ";
 
         private const string inputErrorReport = "Incorrect input. Please type number of the command";

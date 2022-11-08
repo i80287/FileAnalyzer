@@ -51,6 +51,10 @@
                     { _programCore.LoadNewFile(); }
                     break;
 
+                    case UserCommand.ClearConsole:
+                    { _programCore.ClearUserConsole(); }
+                    break;
+
                     case UserCommand.Exit:
                     { _programCore.PrintExitMessage(); }
                     return;
@@ -62,8 +66,10 @@
 
         private void ChangeLocale()
         {
-            System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
-            System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("en-US");
+            System.Threading.Thread.CurrentThread.CurrentCulture 
+                = new System.Globalization.CultureInfo("en-US");
+            System.Threading.Thread.CurrentThread.CurrentUICulture 
+                = new System.Globalization.CultureInfo("en-US");
         }
     }
 }
