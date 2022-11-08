@@ -24,12 +24,12 @@
 
         public Program()
         {// Initialize backend part and frontend part classes.
+            ChangeLocale();
             _programCore = new ProgramCore();
             _userListener = new UserListener();
             // Change locale to en-US 
             // to avoid errors with parsing
             // double numbers from the file.
-            ChangeLocale();
         }
 
         public void Run()
@@ -74,10 +74,11 @@
 
         private void ChangeLocale()
         {
+            System.Console.OutputEncoding = System.Text.Encoding.UTF8;
             System.Threading.Thread.CurrentThread.CurrentCulture 
-                = new System.Globalization.CultureInfo("en-US");
+                = new System.Globalization.CultureInfo("en-US", false);
             System.Threading.Thread.CurrentThread.CurrentUICulture 
-                = new System.Globalization.CultureInfo("en-US");
+                = new System.Globalization.CultureInfo("en-US", false);
         }
     }
 }
