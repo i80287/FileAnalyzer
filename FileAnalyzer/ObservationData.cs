@@ -130,6 +130,8 @@ namespace FileAnalyzer
 
             double.TryParse(splittedData[15], out _pressure9am);
             _pressure9amAsString = splittedData[15];
+            
+            _rainTodayAsString = splittedData[21];
         }
 
         public override string ToString()
