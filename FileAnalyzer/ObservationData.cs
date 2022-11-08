@@ -31,7 +31,6 @@ namespace FileAnalyzer
         private string _windSpeed3pmAsString;
         private double _pressure9am;
         private string _pressure9amAsString;
-
         private string _rainTodayAsString;
 
         // data in csv format
