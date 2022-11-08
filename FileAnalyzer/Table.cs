@@ -12,22 +12,22 @@ namespace FileAnalyzer
     /// </summary>
     public class Table
     {
-        private const string averageRainfallReport = "Average rainfall in the {0}: {1} mm";
-        private const string noRainfallReport = "No rainfall measurements in the {0}";
+        private const string averageRainfallReport = "Average rainfall in the {0}: {1} mm\n";
+        private const string noRainfallReport = "No rainfall measurements in the {0}\n";
         private const string sunshinePeriodReport = "Longest sunshine period was on {0}.\n"
                                                   + "It lasted for {1} hours.\n"
-                                                  + "Max temperature on that date was {2} °C.\n\n";
-        private const string fishingDaysReport =  "Amount of days suitable for fishing: {0}";
+                                                  + "Max temperature on that date was {2} °C.\nn";
+        private const string fishingDaysReport = "Amount of days suitable for fishing: {0}\n";
         private const string fishingDaysWithDirReport = "Amount of days suitable for fishing when wind\n" +
-                                                        " has only w, wsw, sw, ssw and w directions: {0}";
-        private const string groupsCountReport = "Amount of groups of observations " +
-                                                 "grouped by location name: {0}";
-        private const string eachGroupSizeReport =  "Amount of observations in group" +
-                                                    "  from the {0}: {1}";
+                                                        "  has only W, WSW, SW, SSW and W directions: {0}\n";
+        private const string groupsCountReport = "Amount of groups of observations\n" +
+                                                 "  grouped by location name: {0}\n";
+        private const string eachGroupSizeReport =  "Amount of observations in group\n" +
+                                                    "  from the {0}: {1}\n";
         private const string rainyDayAmountReport = "Amount of rainy days when max temperature\n" +
-                                                    " temperature was at least 20 °C: {0}";
-        private const string normalPressDaysReport = "Amount of days with normal pressure" +
-                                                     " from 1000 to 1007 kPa: {0}";
+                                                    " temperature was at least 20 °C: {0}\n";
+        private const string normalPressDaysReport = "Amount of days with normal pressure\n" +
+                                                     " from 1000 to 1007 kPa: {0}\n";
 
         // Table line in format ┌──...──┐.
         private readonly string _startTableLine;
