@@ -9,7 +9,7 @@ namespace FileAnalyzer {
     /// interface (console).
     /// </summary>
     internal static class IOTools {
-        private const string filePathRequestReport = "Type file name or full path to the csv file with data\n\n"
+        private const string filePathRequestReport = "Please type file name or full path to the csv file with data\n\n"
                                                    + "By default file will be searched in:\n{0}\n\n> ";
         private const string badPathReport = "Invalid name or path format";
         private const string missingFileReport = "File not found";

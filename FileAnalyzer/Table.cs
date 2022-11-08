@@ -177,7 +177,8 @@ namespace FileAnalyzer
         }
 
         public StringBuilder ShowTableStatistic()
-        {
+        {// Function to calculate statistic
+         // about the data in the table.
             (int fishingDaysCount, int fishingDaysWithDirCount)
                 = FishingDaysCount();
             Dictionary<string, int> locsNamesAndCounts = LocsInEachGroups();

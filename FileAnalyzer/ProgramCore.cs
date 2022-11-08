@@ -14,7 +14,7 @@ namespace FileAnalyzer
 
         private const string exitMessage = "Thanks for using the program. Press any key to exit";
 
-        private string _workingDir;
+        private readonly string _workingDir;
         private Table _table;
 
         internal ProgramCore()
@@ -24,7 +24,9 @@ namespace FileAnalyzer
         }    
 
         internal void SydneyInfoCommand()
-        {
+        {// Function to select data
+         // from the table based on
+         // second criteria.
             (StringBuilder tableData, StringBuilder fileStrBuilder) = _table.FetchByLocationEndYear("Sydney", 2009, 2010);
             Print(tableData, end: "\n\n");
 
@@ -33,7 +35,9 @@ namespace FileAnalyzer
         }
 
         internal void LocationRainfallCommand()
-        {
+        {// Function to select data
+         // from the table based on
+         // third criteria.
             (StringBuilder tableData, StringBuilder fileStrBuilder) = _table.FetchSortedByLocation();
             Print(tableData, end: "\n\n");
 
@@ -42,7 +46,9 @@ namespace FileAnalyzer
         }
 
         internal void SunShineAndMaxTempCommand()
-        {
+        {// Function to select data
+         // from the table based on
+         // fourth criteria.
             (StringBuilder tableData, StringBuilder fileStrBuilder) = _table.FetchBySunShine();
             Print(tableData, end: "\n\n");
 
@@ -50,8 +56,9 @@ namespace FileAnalyzer
             SaveDataToFile(fileStrBuilder, filePath);            
         }
 
-        internal void StatisticCommand() 
-        {
+        internal void StatisticCommand()
+        {// Function to show statistic
+         // about the data from the table.
             StringBuilder tableData = _table.ShowTableStatistic();
             Print(tableData, end: "\n\n");
         }
@@ -59,6 +66,7 @@ namespace FileAnalyzer
         internal void LoadNewFile()
         {// Function to load data from
          // the file in the new table.
+         // File is selected by user.
             string[] dataFromFile = RequestDataFromFile();
             _table = new Table(dataFromFile);
         }

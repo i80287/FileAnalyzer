@@ -1,5 +1,13 @@
 ﻿namespace FileAnalyzer 
 {
+    /// <remarks>
+    /// "Вариант 5. Отличный денёк для рыбалки в Австралии"
+    /// 
+    /// This work made by
+    /// kormilitsyn vladimir
+    /// from group БПИ226.
+    /// </remarks>
+
     /// <summary>
     /// This class binds backend of
     /// the program (class ProgramCore)  
