@@ -12,11 +12,11 @@ namespace FileAnalyzer
     /// </summary>
     public class Table
     {
-        private const string averageRainfallReport = "Average rainfall in the {0}: {1} mm\n";
+        private const string averageRainfallReport = "\nAverage rainfall in the {0}: {1} mm";
         private const string noRainfallReport = "No rainfall measurements in the {0}\n";
         private const string sunshinePeriodReport = "Longest sunshine period was on {0}.\n"
                                                   + "It lasted for {1} hours.\n"
-                                                  + "Max temperature on that date was {2} °C.\nn";
+                                                  + "Max temperature on that date was {2} °C.\n";
         private const string fishingDaysReport = "Amount of days suitable for fishing: {0}\n";
         private const string fishingDaysWithDirReport = "Amount of days suitable for fishing when wind\n" +
                                                         "  has only W, WSW, SW, SSW and W directions: {0}\n";
@@ -143,7 +143,7 @@ namespace FileAnalyzer
                 { fileStrBuilder.AppendLine(observData.ToString()); }
             }
 
-            return (FormTableFromContent(strBuilder, false), fileStrBuilder);
+            return (strBuilder, fileStrBuilder);
         }
 
         public (StringBuilder, StringBuilder) FetchBySunShine()
