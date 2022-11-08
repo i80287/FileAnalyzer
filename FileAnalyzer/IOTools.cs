@@ -238,7 +238,7 @@ namespace FileAnalyzer {
          // of the file correctly.
             string userInput = Console.ReadLine();
 
-            if (userInput is null)
+            if (userInput is null || userInput.Length == 0)
             { return string.Empty; }
 
             // In case user wrote only 
