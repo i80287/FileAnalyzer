@@ -106,7 +106,8 @@ namespace FileAnalyzer
             StringBuilder strBuilder = 
                 new StringBuilder(_observations.Count + _locationsNames.Count);
             
-            StringBuilder fileStrBuilder = new StringBuilder(_csvFormatColumnsNames);
+            StringBuilder fileStrBuilder = new StringBuilder(_observations.Count);
+            fileStrBuilder.AppendLine(_csvFormatColumnsNames);
 
             foreach (string locationName in _locationsNames)
             {
@@ -240,26 +241,6 @@ namespace FileAnalyzer
             return strBuilder;
         }
         
-        private StringBuilder FormTableFromContent(StringBuilder content, bool addEndLine = true)
-        {// Function to form data from given StringBuilder
-         // into a console text table format with headers.
-
-            StringBuilder strBuilder = new StringBuilder();
-
-            // Form the header of the text table.
-            strBuilder.AppendLine(_startTableLine);
-            strBuilder.AppendLine(_columnsNamesLine);
-            strBuilder.AppendLine(_midTableLine);
-
-            // Add provided content to the body of the text table.
-            strBuilder.Append(content);
-
-            if (addEndLine)
-            { strBuilder.AppendLine(_endTableLine); }
-
-            return strBuilder;
-        }
-
         private StringBuilder FormCsvData(List<ObservationData> obserations)
         {// Function to form given observations into
          // a StringBuilder with csv format lines.
