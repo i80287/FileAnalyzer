@@ -243,7 +243,8 @@ namespace FileAnalyzer {
 
             // In case user wrote only 
             // file name without extension.
-            if (!userInput.EndsWith(".csv"))
+            if (userInput.Length <= 4 ||
+                !userInput.EndsWith(".csv"))
             { userInput += ".csv"; }
 
             // If user provided only file
