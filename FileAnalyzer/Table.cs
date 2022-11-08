@@ -12,7 +12,7 @@ namespace FileAnalyzer
     /// </summary>
     public class Table
     {
-        private const string averageRainfallReport = "\nAverage rainfall in the {0}: {1} mm";
+        private const string averageRainfallReport = "\nAverage rainfall in the {0}: {1} mm\n";
         private const string noRainfallReport = "No rainfall measurements in the {0}\n";
         private const string sunshinePeriodReport = "Longest sunshine period was on {0}.\n"
                                                   + "It lasted for {1} hours.\n"
@@ -29,16 +29,16 @@ namespace FileAnalyzer
         private const string normalPressDaysReport = "Amount of days with normal pressure\n" +
                                                      " from 1000 to 1007 kPa: {0}\n";
 
-        // Table line in format ┌──...──┐.
+        // Table line in format ┌──...──┐
         private readonly string _startTableLine;
 
-        // Table line in format ├──...──┤.
+        // Table line in format ├──...──┤
         private readonly string _midTableLine;
 
-        // Table line in format └──...──┘.
+        // Table line in format └──...──┘
         private readonly string _endTableLine;
 
-        // Table line in format │ Name1 │ ... │ NameK │.
+        // Table line in format │ Name1 │ ... │ NameK │
         private readonly string _columnsNamesLine;
 
         // Amount of fields in the row.
@@ -83,8 +83,9 @@ namespace FileAnalyzer
         {// Function to select data based on location and years.
          // Returns observations in console table and csv formats
             List<ObservationData> filteredObservs = _observations
-                .Where(observData => observData.Location.Equals(location) 
-                                     && years.Contains(observData.Year))
+                .Where(observData => 
+                    observData.Location.Equals(location) &&
+                     years.Contains(observData.Year))
                 .ToList();
             
             StringBuilder strBuilder = FormTable(filteredObservs, 20);
@@ -102,19 +103,20 @@ namespace FileAnalyzer
                     .ToHashSet()
                     .ToList();
 
-            StringBuilder strBuilder = new StringBuilder(_observations.Count + _locationsNames.Count);
+            StringBuilder strBuilder = 
+                new StringBuilder(_observations.Count + _locationsNames.Count);
             
-            StringBuilder fileStrBuilder = new StringBuilder(_observations.Count);
-            fileStrBuilder.AppendLine(_csvFormatColumnsNames);
+            StringBuilder fileStrBuilder = new StringBuilder(_csvFormatColumnsNames);
 
-            for (int i = 0; i < _locationsNames.Count; i++)
+            foreach (string locationName in _locationsNames)
             {
                 // List with observations from the same location.
                 List<ObservationData> sameLocationObservs = _observations
-                    .Where(observ => _locationsNames[i].Equals(observ.Location))
+                    .Where(observ => locationName.Equals(observ.Location))
                     .ToList();
-
-                sameLocationObservs.Sort((observ1, observ2) => observ1.CompareRainfall(observ2));
+                
+                sameLocationObservs.Sort(
+                    (observ1, observ2) => observ1.CompareRainfall(observ2));
                 
                 IEnumerable<double> rainfalls = sameLocationObservs
                     .Where(observData => observData.RainfallAsStr != "NA")
@@ -123,24 +125,24 @@ namespace FileAnalyzer
                 // Add report about the average rainfall.
                 if (rainfalls.Count() > 0)
                 {
-                    double averageRainfall = rainfalls.Average();
-                    string report = string.Format(averageRainfallReport, _locationsNames[i], averageRainfall);
-                    strBuilder.AppendLine(report);
+                    strBuilder.AppendFormat(
+                        averageRainfallReport, 
+                        locationName, 
+                        rainfalls.Average()
+                    );
                 }
                 else
                 {// If all observations from location have "NA" rainfall.
-                    string report = string.Format(noRainfallReport, _locationsNames[i]);
-                    strBuilder.AppendLine(report);
+                    strBuilder.AppendFormat(
+                        noRainfallReport, 
+                        locationName
+                    );
                 }
-
-                //strBuilder.AppendLine(startTableLine);
-                //strBuilder.Append(FormPartialTable(sameLocationObservs, 10));
-                //strBuilder.AppendLine(endTableLine);
+                
                 strBuilder.Append(FormTable(sameLocationObservs, 10));
 
-                // Fill StringBuilder with data for the csv file.
-                foreach (ObservationData observData in sameLocationObservs)
-                { fileStrBuilder.AppendLine(observData.ToString()); }
+                // Add selected observations to the file StringBuilder.
+                fileStrBuilder.AppendJoin<ObservationData>('\n', sameLocationObservs);
             }
 
             return (strBuilder, fileStrBuilder);
@@ -158,8 +160,6 @@ namespace FileAnalyzer
             ObservationData longestPeriodObserv = filteredObservs
                 .MaxBy(observData => observData.Sunshine);
 
-            StringBuilder strBuilder = FormTable(filteredObservs, 20);
-
             // Report about longest sunshine's date and max temperature on that date.
             string report = string.Format(
                 sunshinePeriodReport,
@@ -167,7 +167,8 @@ namespace FileAnalyzer
                 longestPeriodObserv.Sunshine,
                 longestPeriodObserv.MaxTempAsStr
             );
-            strBuilder.Insert(0, report);
+            StringBuilder strBuilder = new StringBuilder(report);
+            strBuilder.Append(FormTable(filteredObservs, 20));
 
             StringBuilder fileStrBuilder = FormCsvData(filteredObservs);
 
@@ -202,10 +203,10 @@ namespace FileAnalyzer
             return strBuilder;
         }
 
-        private StringBuilder FormTable(List<ObservationData> obserations, int howMuchFromStartAndEnd = -1)
+        private StringBuilder FormTable(List<ObservationData> observations, int howMuchFromStartAndEnd = -1)
         {// Function to form given observations into a StringBuilder
          // contains data in console text table format with headers.
-            StringBuilder strBuilder = new StringBuilder(obserations.Count);
+            StringBuilder strBuilder = new StringBuilder(observations.Count);
 
             // Form the header of the text table.
             strBuilder.AppendLine(_startTableLine);
@@ -214,23 +215,23 @@ namespace FileAnalyzer
 
             // Form body of the text table.
             if (howMuchFromStartAndEnd <= 0 ||
-                obserations.Count / 2 <= howMuchFromStartAndEnd)
+                observations.Count / 2 <= howMuchFromStartAndEnd)
             {// Add all observations.
-                foreach (ObservationData observData in obserations)
+                foreach(ObservationData observData in observations)
                 { strBuilder.Append(BuildLine(observData)); }
             }
             else
             {// Add only 2 * howMuchFromStartAndEnd observations
                 // Add first howMuchFromStartAndEnd elements.
-                foreach (ObservationData observData in obserations.Take(howMuchFromStartAndEnd))
+                foreach(ObservationData observData in observations.Take(howMuchFromStartAndEnd))
                 { strBuilder.Append(BuildLine(observData)); }
 
-                // Add "..." to each column to show reduction.
+                // Add "..." to each column to show skipped lines.
                 for (int j = 0; j != 3; ++j)
                 { strBuilder.Append(BuildLine(".")); }
 
                 // Add last howMuchFromStartAndEnd elements.
-                foreach (ObservationData observData in obserations.Skip(obserations.Count - howMuchFromStartAndEnd))
+                foreach(ObservationData observData in observations.TakeLast(howMuchFromStartAndEnd))
                 { strBuilder.Append(BuildLine(observData)); }
             }
             
@@ -440,22 +441,25 @@ namespace FileAnalyzer
         }
         
         private string BuildColumnNamesLine()
-        {
+        {// Function to build line with column names.
+            // Init StringBuilder with │ symbol
             StringBuilder strBuilder = new StringBuilder("\u2502");
             for (int i = 0; i < _amountOfFields; ++i)
-            {
+            {// Add    NameK   │
                 strBuilder.Append(_columnsNames[i].PadRight(_columnsWidth[i], ' ') + "\u2502");
             }
             return strBuilder.ToString();
         }
 
         private StringBuilder BuildLine(string str)
-        {
+        {// Function to build line in format │ str │ ... │ str │
+            // Init StringBuilder with │ symbol.
             StringBuilder strBuilder = new StringBuilder("\u2502");
             for (int i = 0; i < _amountOfFields; ++i)
-            {
+            {// Add    str   │
                 strBuilder.Append(str.PadRight(_columnsWidth[i], ' ') + "\u2502");
             }
+            // Add line terminator
             strBuilder.AppendLine();
             return strBuilder;
         }
