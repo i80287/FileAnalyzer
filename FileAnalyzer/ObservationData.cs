@@ -31,7 +31,7 @@ namespace FileAnalyzer
         private string _windSpeed3pmAsString;
         private double _pressure9am;
         private string _pressure9amAsString;
-        private bool _rainToday;
+
         private string _rainTodayAsString;
 
         // data in csv format
@@ -131,9 +131,6 @@ namespace FileAnalyzer
 
             double.TryParse(splittedData[15], out _pressure9am);
             _pressure9amAsString = splittedData[15];
-
-            if (splittedData[21] == "Yes") { _rainToday = true; }
-            _rainTodayAsString = splittedData[21];
         }
 
         public override string ToString()
