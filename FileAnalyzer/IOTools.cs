@@ -146,8 +146,8 @@ namespace FileAnalyzer {
             if (!(splittedPath is null) && splittedPath.Length > 0)
             {
                 fileName = splittedPath[^1];
-                int lastSepIndex = userInput.LastIndexOfAny(pathSeparators);
                 // If path to the file is provived.
+                int lastSepIndex = userInput.LastIndexOfAny(pathSeparators);
                 if (lastSepIndex != -1)
                 { pathToFile = userInput[..lastSepIndex]; }
             }
@@ -241,14 +241,7 @@ namespace FileAnalyzer {
             // If user provided only file
             // name without the full path.
             if (userInput.IndexOfAny(pathSeparators) == -1)
-            {
-                // In Windows BaseDirectory variable
-                // doesn't ends with "\" but in Linux does.
-                if (Environment.OSVersion.Platform == PlatformID.Win32NT)
-                { userInput = userInput.Insert(0, currentWorkingDirectory) + @"\"; }
-                else
-                { userInput = userInput.Insert(0, currentWorkingDirectory); }
-            }
+            { userInput = userInput.Insert(0, currentWorkingDirectory); }
 
             return userInput;
         }
