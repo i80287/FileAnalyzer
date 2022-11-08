@@ -60,10 +60,11 @@ namespace FileAnalyzer {
         }
 
         internal static string GetCurrentWorkingDir()
-                => currentWorkingDirectory;
+            => currentWorkingDirectory;
 
         internal static string[] RequestDataFromFile() 
-        {
+        {// Function to get date from file.
+         // Path is selected by the user.
             string path = RequestExistingFilePath();
 
             Encoding encoding = GetFileEncoding(path);
@@ -73,8 +74,8 @@ namespace FileAnalyzer {
                 path = RequestExistingFilePath();
                 encoding = GetFileEncoding(path);
             }
-            string[] fileData;
 
+            string[] fileData;
             try { fileData = File.ReadAllLines(path, encoding: encoding); }
             catch { fileData = null; }
 
@@ -94,7 +95,8 @@ namespace FileAnalyzer {
         }
 
         internal static bool WriteToFile(string path, StringBuilder content)
-        {// Function to write data to the file. If file exists it will be overwritten
+        {// Function to write data to the file.
+         // If file exists it will be overwritten.
             if (!ValidatePathAndName(path)) { return false; }
             try { File.WriteAllText(path, content.ToString()); } 
             catch { return false; }
@@ -159,9 +161,9 @@ namespace FileAnalyzer {
                 { pathToFile = userInput[..lastSepIndex]; }
             }
 
-            return !string.IsNullOrWhiteSpace(fileName)
-                && pathToFile.IndexOfAny(invalidPathChars) == -1
-                && fileName.IndexOfAny(invalidNameChars) == -1;
+            return !string.IsNullOrWhiteSpace(fileName) &&
+                pathToFile.IndexOfAny(invalidPathChars) == -1 &&
+                fileName.IndexOfAny(invalidNameChars) == -1;
         }
 
         private static Encoding GetFileEncoding(string path)
@@ -171,7 +173,6 @@ namespace FileAnalyzer {
             catch { return null; }
             
             fileStream.Position = 0;
-
             long bomBytesLength = fileStream.Length > 4 ? 4 : fileStream.Length;
             byte[] bomBytes = new byte[bomBytesLength];
             fileStream.Read(bomBytes, 0, bomBytes.Length);
@@ -182,31 +183,32 @@ namespace FileAnalyzer {
 
         private static Encoding SelectEncoding(byte[] bomBytes)
         {// Function to select file's encoding based on first bytes of the file.
+            // UTF-16 BE starts with FE FF.
             if (bomBytes[0] == 0xFE && bomBytes[1] == 0xFF)
-            {// UTF-16 BE starts with FE FF.
-                return Encoding.BigEndianUnicode;
-            }
-            if (bomBytes[0] == 0xEF
-                && bomBytes[1] == 0xBB
-                && bomBytes[2] == 0xBF)
-            {// UTF-8 starts with EF BB BF.
-                return Encoding.UTF8;
-            }
-            if (bomBytes[0] == 0x2B
-                && bomBytes[1] == 0x2F
-                && bomBytes[2] == 0x76)
-            {// UTF-7 starts with 2B 2F 76.
-                return Encoding.UTF7;
-            }
-            if (bomBytes[0] == 0xFF
-                && bomBytes[1] == 0xFE)
-            {// both UTF-16 LE and UTF-32 LE start with FF FE
+            { return Encoding.BigEndianUnicode; }
+
+            // UTF-8 starts with EF BB BF.
+            if (bomBytes[0] == 0xEF &&
+                bomBytes[1] == 0xBB &&
+                bomBytes[2] == 0xBF)
+            { return Encoding.UTF8; }
+
+            // UTF-7 starts with 2B 2F 76.
+            if (bomBytes[0] == 0x2B && 
+                bomBytes[1] == 0x2F && 
+                bomBytes[2] == 0x76)
+            { return Encoding.UTF7; }
+
+            // Both UTF-16 LE and UTF-32 LE 
+            // start with FF FE.
+            if (bomBytes[0] == 0xFF && 
+                bomBytes[1] == 0xFE)
+            {
                 if (bomBytes[2] == 0 && bomBytes[3] == 0)
-                {
-                    return Encoding.UTF32;
-                }
+                { return Encoding.UTF32; }
                 return Encoding.Unicode;
             }
+            
             // File may not contain BOM.
             return Encoding.Default;
         }
