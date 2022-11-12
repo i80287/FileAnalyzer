@@ -24,12 +24,12 @@
 
         public Program()
         {// Initialize backend part and frontend part classes.
-            ChangeLocale();
-            _programCore = new ProgramCore();
-            _userListener = new UserListener();
             // Change locale to en-US 
             // to avoid errors with parsing
             // double numbers from the file.
+            ChangeLocale();
+            _programCore = new ProgramCore();
+            _userListener = new UserListener();
         }
 
         public void Run()
