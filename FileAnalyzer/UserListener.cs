@@ -56,8 +56,8 @@ namespace FileAnalyzer
             string userInput = Console.ReadLine();
             int commandNumber = (int)UserCommand.Exit;
 
-            while (!int.TryParse(userInput, out commandNumber) 
-                    || !Enum.IsDefined(typeof(UserCommand), commandNumber))
+            while (!int.TryParse(userInput, out commandNumber) ||
+                   !Enum.IsDefined(typeof(UserCommand), commandNumber))
             {
                 Console.WriteLine(inputErrorReport);
                 Console.Write(commandsList);
